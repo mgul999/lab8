@@ -6,7 +6,7 @@
 
 (* Objective:
 
-This lab practices concepts of functors. 
+This lab practices concepts of functors.
  *)
 
 (*======================================================================
@@ -100,31 +100,46 @@ module MakeStack (Element: SERIALIZE) : (STACK with type element = Element.t) =
     type element = Element.t
     type stack = element list
 
-    let empty : stack = []
-
-    let push (el : element) (s : stack) : stack =
-      failwith "push not implemented"
-
     let pop_helper (s : stack) : (element * stack) =
-      failwith "pop_helper not implemented"
+      match s with
+      | [] -> raise (Empty)
+      | hd :: tl -> hd, tl
 
-    let top (s : stack) : element =
-      failwith "top not implemented"
+    let map : (element -> element) -> stack -> stack =
+      List.map
 
-    let pop (s : stack) : stack =
-      failwith "pop not implemented"
+    let filter =
+      List.filter
 
-    let map (f : element -> element) (s : stack) : stack =
-      failwith "map not implemented"
-
-    let filter (f : element -> bool) (s : stack) : stack =
-      failwith "filter not implemented"
-
-    let fold_left (f : 'a -> element -> 'a) (init : 'a) (s : stack) : 'a =
-      failwith "fold_left not implemented"
+    let fold_left =
+      List.fold_left
 
     let serialize (s : stack) : string =
-      failwith "serialize not implemented"
+      let string_join x y = Element.serialize y
+                    ^ (if x <> "" then ":" ^ x else "") in
+      fold_left string_join "" s
+
+    (* empty -- An empty stack *)
+    let empty : stack = []
+
+    (* push i s -- Adds an integer element i to the top of stack s *)
+    let push (i : element ) (s : stack) : stack = i :: s
+
+    (* top s -- Returns the value of the topmost element on stack s,
+       raising the EmptyStack exception if there is no element to be
+       returned. *)
+    let top (s : stack) : element  =
+      match s with
+      | [] -> raise (Empty)
+      | hd :: tl -> hd
+
+    (* pop s -- Returns a stack with the topmost element from s
+       removed, raising the EmptyStack exception if there is no
+       element to be removed. *)
+    let pop (s : stack) : stack =
+      match s with
+      | [] -> raise (Empty)
+      | hd :: tl -> tl
   end ;;
 
 (*......................................................................
@@ -132,7 +147,10 @@ Exercise 1B: Now, make a module `IntStack` by applying the functor
 that you just defined to an appropriate module for serializing integers.
 ......................................................................*)
 
-module IntStack = struct end ;;
+module IntStack = MakeStack (struct
+type t = int
+let serialize = string_of_int
+   end) ;;
 
 (*......................................................................
 Exercise 1C: Make a module `IntStringStack` that creates a stack whose
@@ -150,6 +168,8 @@ For this oversimplified serialization function, you may assume that
 the string will be made up of alphanumeric characters only.
 ......................................................................*)
 
-module IntStringStack = struct end ;;
-
-
+module IntStringStack = MakeStack (struct
+type t = (int * string)
+let serialize ((i, s) : int * string) : string =
+  "(" ^ string_of_int i ^ ",'" ^ s ^ "')"
+ end) ;;
