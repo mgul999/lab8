@@ -119,22 +119,7 @@ module MakeInterval (Endpoint : ORDERED_TYPE) =
 
     (* intersect intvl1 intvl2 -- Returns the intersection of `intvl1`
        and `intvl2` *)
-    let intersect (intvl1 : interval) (intvl2 : interval) : interval =
-      let max (x: Endpoint.t) (y: Endpoint.t) : Endpoint.t =
-        if (Endpoint.compare x y) >= 0
-        then x
-        else y in
-      let min (x: Endpoint.t) (y: Endpoint.t) : Endpoint.t =
-        if (Endpoint.compare x y) < 0
-        then x
-        else y in
-      match intvl1, intvl2 with
-      |Interval (l1, h1), Interval (l2, h2) ->
-        let intl = Interval ((max l1 l2), (min h1 h2)) in
-        if is_empty intl
-        then Empty
-        else intl
-      |_ -> Empty
+    let intersect (intvl1 : interval) (intvl2 : interval) : interval =      let ordered x y = if Endpoint.compare x y <= 0 then x, y else y, x in      match intvl1, intvl2 with      | Empty, _      | _, Empty -> Empty      | Interval (low1, high1), Interval (low2, high2) ->         let (_, low), (high, _)  = ordered low1 low2, ordered high1 high2 in         create low high
     end ;;
 
 (*......................................................................
